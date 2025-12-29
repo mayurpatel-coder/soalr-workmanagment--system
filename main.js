@@ -101,3 +101,78 @@ function showNotification(msg, type) {
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 3000);
 }
+/* ===== First Time Module Popup ===== */
+if (!localStorage.getItem('firstModuleDone')) {
+    const modal = document.getElementById('firstModuleModal');
+    modal.classList.remove('hidden');
+
+    document.getElementById('firstModuleBtn').onclick = () => {
+        const module = document.getElementById('firstModuleSelect').value;
+        if (!module) return alert("Select a module");
+
+        localStorage.setItem('firstModuleDone', 'true');
+        modal.classList.add('hidden');
+
+        document.querySelector(`[data-page="${module}"]`).click();
+    };
+}
+/* ===== Inquiry CRUD ===== */
+const inquiryBtn = document.getElementById('addInquiryBtn');
+const inquiryModal = document.getElementById('inquiryModal');
+const inquiryTable = document.querySelector('#inquiry-page tbody');
+
+if (inquiryBtn) {
+    inquiryBtn.onclick = () => inquiryModal.classList.remove('hidden');
+}
+
+document.getElementById('saveInquiry').onclick = () => {
+    const data = {
+        id: Date.now(),
+        name: inqName.value,
+        phone: inqPhone.value,
+        category: inqCategory.value,
+        status: 'Pending',
+        date: new Date().toISOString().split('T')[0]
+    };
+
+    const list = JSON.parse(localStorage.getItem('inquiries')) || [];
+    list.push(data);
+    localStorage.setItem('inquiries', JSON.stringify(list));
+
+    inquiryModal.classList.add('hidden');
+    renderInquiries();
+};
+
+function renderInquiries() {
+    const list = JSON.parse(localStorage.getItem('inquiries')) || [];
+    inquiryTable.innerHTML = '';
+
+    list.forEach((i, index) => {
+        inquiryTable.innerHTML += `
+        <tr>
+          <td>#INQ${index+1}</td>
+          <td>${i.name}</td>
+          <td>${i.phone}</td>
+          <td>${i.category}</td>
+          <td>--</td>
+          <td><span class="badge badge-warning">${i.status}</span></td>
+          <td>${i.date}</td>
+          <td>
+            <button class="btn-icon danger" onclick="deleteInquiry(${i.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>`;
+    });
+}
+
+function deleteInquiry(id) {
+    let list = JSON.parse(localStorage.getItem('inquiries'));
+    list = list.filter(i => i.id !== id);
+    localStorage.setItem('inquiries', JSON.stringify(list));
+    renderInquiries();
+}
+
+renderInquiries();
+
+
